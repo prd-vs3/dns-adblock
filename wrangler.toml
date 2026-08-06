@@ -1,0 +1,105 @@
+name = "dns-adblock"
+main = "src/index.ts"
+compatibility_date = "2026-02-28"
+compatibility_flags = ["nodejs_compat"]
+# account_id = ""
+minify = true
+# workers_dev = false
+preview_urls = false
+
+[build]
+command = "npm run build"
+
+[assets]
+directory = "./static"
+binding = "ASSETS"
+
+# D1 Database for Profiles, Rules and Logs
+[[d1_databases]]
+binding = "DB"
+database_name = "obex_db"
+# This field must be filled with your database ID; otherwise the deployment will fail.
+database_id = "ebc40912-f7b0-4241-9074-4aaf1be9c605"
+
+[triggers]
+crons = ["* * * * *"]
+
+[placement]
+# mode = "targeted"
+# region = "aws:ap-southeast-1"
+# Or
+# mode = "smart"
+# Or
+mode = "off"
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+head_sampling_rate = 0.001
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 0.01
+
+[vars]
+# Maximum number of access points allowed per profile
+MAX_ACCESS_POINTS_PER_PROFILE = 100
+# Maximum number of profiles allowed per user
+MAX_PROFILES_PER_USER = 10
+# Used to resolve DoH domains
+SUBSTITUTE_DOMAIN="www.okx.com"
+IP_REGION_CN = "[  {    \"ip\": \"198.41.222.102\",    \"area\": \"SG\"  },  {    \"ip\": \"173.245.59.246\",    \"area\": \"SG\"  },  {    \"ip\": \"104.18.47.174\",    \"area\": \"HK\"  },  {    \"ip\": \"104.19.50.3\",    \"area\": \"HK\"  }]"
+# Time constants
+# Session duration for authenticated users by default (in minutes)
+DEFAULT_SESSION_EXPIRATION_MINUTES=1440
+# Session duration for authenticated users when keeping logged in option is selected (in days)
+OPTIONAL_SESSION_EXPIRATION_DAYS=7
+# Access Token expiration time (in minutes)
+ACCESS_TOKEN_EXPIRATION_MINUTES=1
+# Maximum allowed distance (in km) between session login and current request
+SESSION_GEO_DISTANCE_KM=50
+# TTL for temporary pre-auth session during login (in seconds)
+PREAUTH_TTL_SECONDS=300
+# In-memory retention time for profile bloom filters (in milliseconds)
+BLOOM_MEM_TTL=600000
+# Timeout threshold when downloading upstream blocklists (in milliseconds)
+SYNC_TIMEOUT_MS=30000
+# Number of days of inactivity before an account is cleared by cron jobs
+INACTIVITY_THRESHOLD_DAYS=180
+# Throttle interval for updating profile "last active" status (in seconds)
+THROTTLE_ACTIVE_SEC=3600
+# Minimum interval between automated blocklist profile syncs (in seconds)
+SYNC_PROFILE_INTERVAL_SEC=86400
+
+# Preset Upstream Services
+PRESET_UPSTREAMS = "[  {    \"label\": \"settings.presetCloudflareSecurity\",    \"url\": \"https://security.cloudflare-dns.com/dns-query\"  },  {    \"label\": \"settings.presetCloudflareFamilies\",    \"url\": \"https://family.cloudflare-dns.com/dns-query\"  },  {    \"label\": \"settings.presetQuad9\",    \"url\": \"https://dns.quad9.net/dns-query\"  },  {    \"label\": \"settings.presetQuad9Ecs\",    \"url\": \"https://dns11.quad9.net/dns-query\"  },  {    \"label\": \"settings.presetControlDFree\",    \"url\": \"https://freedns.controld.com/no-ads-malware-typo\"  },  {    \"label\": \"settings.presetControlDUncensored\",    \"url\": \"https://freedns.controld.com/uncensored\"  },  {    \"label\": \"settings.presetAdGuard\",    \"url\": \"https://dns.adguard-dns.com/dns-query\"  },  {    \"label\": \"settings.presetAdGuardFamily\",    \"url\": \"https://family.adguard-dns.com/dns-query\"  },  {    \"label\": \"Cloudflare Security (1.1.1.2)\",    \"url\": \"tcp://1.1.1.2:53\"  },  {    \"label\": \"Quad9 ECS (9.9.9.11)\",    \"url\": \"tcp://9.9.9.11:9953\"  },  {    \"label\": \"Google (8.8.8.8)\",    \"url\": \"tcp://8.8.8.8:53\"  }]"
+
+# Preset External Filters
+PRESET_EXTERNAL_FILTERS = "[  {    \"label\": \"filtering.presetOisdBig\",    \"url\": \"https://big.oisd.nl\"  },  {    \"label\": \"filtering.presetOisdNsfw\",    \"url\": \"https://nsfw.oisd.nl\"  },  {    \"label\": \"filtering.presetAdGuard\",    \"url\": \"https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/adservers.txt\"  },  {    \"label\": \"filtering.presetStevenBlack\",    \"url\": \"https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts\"  }]"
+
+# Bloom Filter false positive rate
+# Restored to 0.0001 (1 in 10,000) — safe now because each cron trigger
+# processes only ONE list at a time (~100-150k domains), dramatically reducing
+# per-trigger CPU usage vs. the old all-at-once approach.
+BLOOM_FALSE_POSITIVE_RATE=0.0001
+
+# 1M domains @ p=0.0001: bitArray ≈ 2.4 MB (5 × 512KB D1 chunks)
+MAX_SYNC_DOMAINS=1000000
+
+# Maximum domains processed from a single list per cron trigger.
+MAX_LIST_DOMAINS=500000
+
+# Hard cap on log retention days (overrides per-profile user setting).
+# Prevents high-retention profiles (e.g. 360 days) from filling up D1's 500 MB limit.
+MAX_LOG_RETENTION_DAYS=90
+DEFAULT_LOG_RETENTION_DAYS=30
+
+NORMAL_USER_MAX_LOG_RETENTION_DAYS=7
+NORMAL_USER_DEFAULT_LOG_RETENTION_DAYS=1
+
+# Hard cap on log row count per profile. Acts as a circuit-breaker when write
+# rate temporarily exceeds cleanup rate (e.g. high-traffic profiles).
+MAX_LOGS_PER_PROFILE=500000
